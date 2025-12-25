@@ -25,7 +25,7 @@ import {
 import { ProjectState, TenantCategory, Tenant } from './types';
 import { calculateFinancials, calculateWalkability } from './lib/calculations';
 import { generatePartnerSummary } from './lib/geminiService';
-import { supabase } from './lib/supabase';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { AuthPage } from './components/AuthPage';
 import { Session } from '@supabase/supabase-js';
 
@@ -64,6 +64,27 @@ const INITIAL_STATE: ProjectState = {
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg border border-slate-200">
+          <AlertTriangle size={48} className="mx-auto text-amber-500 mb-4" />
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Setup Required</h1>
+          <p className="text-slate-600 mb-6">
+            The application is deployed, but it cannot connect to the database yet.
+          </p>
+          <div className="bg-slate-100 p-4 rounded-lg text-left text-xs font-mono mb-6 text-slate-700 overflow-x-auto">
+            VITE_SUPABASE_URL<br />
+            VITE_SUPABASE_ANON_KEY
+          </div>
+          <p className="text-sm text-slate-500">
+            Please add these Environment Variables in your Vercel Project Settings and redeploy.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const [state, setState] = useState<ProjectState>(INITIAL_STATE);
   const [activeTab, setActiveTab] = useState('feasibility');
   const [aiSummary, setAiSummary] = useState<string>('');
@@ -400,8 +421,8 @@ const App: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
-                    ? 'bg-slate-900 text-white shadow-lg'
-                    : 'text-slate-600 hover:bg-slate-50'
+                  ? 'bg-slate-900 text-white shadow-lg'
+                  : 'text-slate-600 hover:bg-slate-50'
                   }`}
               >
                 <tab.icon size={16} />
